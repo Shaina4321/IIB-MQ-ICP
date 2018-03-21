@@ -55,6 +55,8 @@ podTemplate(label: 'iibpod',
                     # No deployment to update
                     echo 'No deployment to update'
                     #exit 1
+		    kubectl create -f iib-mq.yml
+		    exit 0
                 fi
 
                 # Update Deployment
