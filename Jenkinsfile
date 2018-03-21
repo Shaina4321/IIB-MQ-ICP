@@ -47,7 +47,7 @@ podTemplate(label: 'iibpod',
                 set +e
                 NAMESPACE=`cat /var/run/configs/registry-config/namespace`
                 REGISTRY=`cat /var/run/configs/registry-config/registry`
-                DEPLOYMENT=`kubectl get deployments -l app=iib10-toolkit-mq -o name`
+                DEPLOYMENT=`kubectl get deployments -l app=iibmq1 -o name`
 
                 kubectl get \${DEPLOYMENT}
 
