@@ -61,7 +61,7 @@ podTemplate(label: 'iibpod',
 
                 # Update Deployment
                 #kubectl set image \${DEPLOYMENT} web=\${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER}
-		kubectl set image \${DEPLOYMENT} iib10-mq-container=\${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER}
+		kubectl set image \${DEPLOYMENT} iibmq1=\${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER}
                 kubectl rollout status \${DEPLOYMENT}
                 """
             }
