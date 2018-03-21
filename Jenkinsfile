@@ -54,11 +54,12 @@ podTemplate(label: 'iibpod',
                 if [ \${?} -ne "0" ]; then
                     # No deployment to update
                     echo 'No deployment to update'
-                    exit 1
+                    #exit 1
                 fi
 
                 # Update Deployment
-                kubectl set image \${DEPLOYMENT} web=\${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER}
+                #kubectl set image \${DEPLOYMENT} web=\${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER}
+		kubectl set image \${DEPLOYMENT} iib10-mq-container=\${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER}
                 kubectl rollout status \${DEPLOYMENT}
                 """
             }
