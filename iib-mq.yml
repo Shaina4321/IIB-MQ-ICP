@@ -36,7 +36,7 @@ items:
             value: accept
           - name: MQ_QMGR_NAME
             value: QM1
-          image: default/iib10-toolkit-mq:latest
+          image: default/iib10-toolkit-mq
           imagePullPolicy: IfNotPresent
           name: iibmq1
           ports:
