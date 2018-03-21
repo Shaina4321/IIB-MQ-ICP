@@ -21,7 +21,7 @@ podTemplate(label: 'iibpod',
                 REGISTRY=`cat /var/run/configs/registry-config/registry`
 			
 
-                docker build -t \${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER} .
+                docker build -t \${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq .
                 """
             }
             stage('Push Docker Image to Registry') {
@@ -36,7 +36,7 @@ podTemplate(label: 'iibpod',
                 docker login -u=\${DOCKER_USER} -p=\${DOCKER_PASSWORD} \${REGISTRY}
                 set -x
 
-                docker push \${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER}
+                docker push \${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq
                 """
             }
         }
@@ -61,7 +61,7 @@ podTemplate(label: 'iibpod',
 
                 # Update Deployment
                 #kubectl set image \${DEPLOYMENT} web=\${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER}
-		kubectl set image \${DEPLOYMENT} iibmq1=\${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER}
+		kubectl set image \${DEPLOYMENT} iibmq1=\${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq
                 kubectl rollout status \${DEPLOYMENT}
                 """
             }
