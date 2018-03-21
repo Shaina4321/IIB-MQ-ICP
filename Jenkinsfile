@@ -19,8 +19,7 @@ podTemplate(label: 'iibpod',
 			
                 NAMESPACE=`cat /var/run/configs/registry-config/namespace`
                 REGISTRY=`cat /var/run/configs/registry-config/registry`
-				echo ${NAMESPACE}
-				echo ${REGISTRY}
+			
 
                 docker build -t \${REGISTRY}/\${NAMESPACE}/iib10-toolkit-mq:${env.BUILD_NUMBER} .
                 """
