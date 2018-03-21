@@ -36,7 +36,7 @@ items:
             value: accept
           - name: MQ_QMGR_NAME
             value: QM1
-          image: registry.ng.bluemix.net/iib-mq:2
+          image: default/iib10-toolkit-mq:latest
           imagePullPolicy: IfNotPresent
           name: iibmq1
           ports:
