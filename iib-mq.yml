@@ -38,7 +38,7 @@ items:
             value: accept
           - name: MQ_QMGR_NAME
             value: QM1
-          image: mycluster.icp:8500/default/iib10-toolkit-mq:9
+          image: mycluster.icp:8500/default/iib10-toolkit-mq
           imagePullPolicy: IfNotPresent
           name: iibmq1
           ports:
