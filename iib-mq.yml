@@ -30,13 +30,15 @@ items:
         labels:
           run: iibmq1
       spec:
+        imagePullSecrets:
+        - name: registry-account
         containers:
         - env:
           - name: LICENSE
             value: accept
           - name: MQ_QMGR_NAME
             value: QM1
-          image: default/iib10-toolkit-mq:latest
+          image: mycluster.icp:8500/default/iib10-toolkit-mq:9
           imagePullPolicy: IfNotPresent
           name: iibmq1
           ports:
