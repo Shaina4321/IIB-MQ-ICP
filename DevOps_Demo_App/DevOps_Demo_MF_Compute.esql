@@ -1,0 +1,190 @@
+DECLARE ns NAMESPACE 'urn:examples:helloservice';
+
+DECLARE log4jConfigPath EXTERNAL CHARACTER '';
+DECLARE logLevel EXTERNAL CHARACTER '';
+
+CREATE COMPUTE MODULE DevOps_Demo_MF_CreateSuccess_Response
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		 CALL CopyMessageHeaders();
+		 DECLARE requestData CHARACTER;
+		 
+		 SET requestData = InputRoot.SOAP.Body.ns:sayHello.request;
+		 
+		 IF COALESCE (requestData, '') <> '' THEN
+		 	DECLARE inCCSID INT InputProperties.CodedCharSetId; 
+ 			DECLARE inEncoding INT InputProperties.Encoding; 
+ 			CREATE LASTCHILD OF Environment DOMAIN('XMLNSC') PARSE(requestData, inEncoding, inCCSID,'CHARACTER', 'XMLNSC');
+		 	CALL createResponseMessage(); -- creating response msg
+		 ELSE 
+		 	SET OutputRoot.SOAP.Body.ns:sayHelloResponse.request = 'request is mandatory paramer';
+		 END IF;
+		-- CALL CopyEntireMessage();
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE createResponseMessage() BEGIN
+		
+		 DECLARE name CHARACTER;
+		 DECLARE weightPound integer 0;
+		 DECLARE heightFeet integer 0;
+		 DECLARE heightInches integer 0;
+		 DECLARE BMIMeasurement CHARACTER;
+		 DECLARE BMIIndex decimal;
+		 DECLARE i integer 1;
+		 
+		 DECLARE ptr REFERENCE TO Environment.XMLNSC.BMICalculator.candidate;
+		 
+		 
+		 WHILE LASTMOVE (ptr) DO
+		 	
+		 	IF COALESCE(ptr.name, '') = '' THEN
+		 		SET OutputRoot.SOAP.Body.ns:sayHelloResponse.BMICalculator.candidate[i].name = 'name cannot be blank';
+		 	END IF;	
+		 	IF COALESCE(ptr.weight.kg, '') = '' THEN
+		 		SET OutputRoot.SOAP.Body.ns:sayHelloResponse.BMICalculator.candidate[i].weight.kg = 'weight cannot be blank';
+		 	ELSE 
+		 		SET weightPound = ptr.weight.kg;
+		 	END IF;
+		 	IF COALESCE(ptr.height.feet, '') = '' THEN
+		 		SET OutputRoot.SOAP.Body.ns:sayHelloResponse.BMICalculator.candidate[i].height.feet = 'height cannot be blank';
+		 	ELSE
+		 		SET heightFeet = ptr.height.feet;
+		 	END IF;
+		 	IF ptr.height.inches > 12 THEN 
+			 	SET OutputRoot.SOAP.Body.ns:sayHelloResponse.BMICalculator.candidate[i].height.inches = 'invalid value';
+		 	ELSE 
+			 	SET heightInches = ptr.height.inches;
+			 	IF COALESCE(ptr.height.inches, '') = '' THEN
+			 		SET heightInches = 0;
+			 	END IF;	
+			    SET weightPound = ROUND(weightPound * 2.20462, 0);		    
+			 			
+			 	SET heightInches = heightInches + (heightFeet*12);
+			 	
+			 	SET BMIIndex = (weightPound * 703) / (heightInches * heightInches);
+			 	
+			 	IF BMIIndex < 18.5 THEN
+			 		SET BMIMeasurement = 'underweight';
+			 	ELSE IF BMIIndex >= 18.5 AND BMIIndex <= 24.9 THEN
+			 		SET BMIMeasurement = 'normal weight';
+			 	ELSE IF BMIIndex >= 25 AND BMIIndex <= 29.9 THEN
+			 		SET BMIMeasurement = 'overweight';
+			 	ELSE IF BMIIndex > 30 THEN
+			 		SET BMIMeasurement = 'obese';
+			 	END IF;
+			 	END IF;
+			 	END IF;
+			 	END IF;
+			 	SET OutputRoot.SOAP.Body.ns:sayHelloResponse.BMIMeasurement = BMIMeasurement;
+		 	END IF;
+					 	
+		 	SET i = i+1;	
+		 MOVE ptr NEXTSIBLING name 'candidate';	
+		 END WHILE;
+	END;
+END MODULE;
+
+
+CREATE COMPUTE MODULE DevOps_Demo_MF_LogMessage
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		DECLARE rc, rc1 BOOLEAN FALSE;
+		DECLARE logMsg, logMessage, excepName CHARACTER;
+		DECLARE refExcepList REFERENCE TO InputExceptionList;
+        DECLARE errorNumber INTEGER;
+--        DECLARE SOAP_FAULTCODE_VALUE_CLIENT CHARACTER 'Client';
+--        DECLARE SOAPENV NAMESPACE 'http://schemas.xmlsoap.org/soap/envelope/';
+
+        CALL getLastExceptionDetail(refExcepList,errorNumber,logMessage,excepName);
+
+--		CALL initLog4j(log4jConfigPath) INTO rc;
+		SET logMsg = '<LOG4J_LOGGING><MESSAGE>' || COALESCE(logMessage, 'NA') || '</MESSAGE><SERVICE>'
+			|| COALESCE(MessageFlowLabel, 'NA') || '</SERVICE><TIMESTAMP>' || CAST(CURRENT_TIMESTAMP AS CHARACTER) || '</TIMESTAMP></LOG4J_LOGGING>';
+		
+--		IF rc = TRUE THEN
+--			CALL log4j_1_1(MessageFlowLabel, 'default', logLevel, logMsg) INTO rc1;
+--		END IF;
+--		SET Environment.Variables.Log4j.LogText = logMsg;
+		
+--		PROPAGATE TO TERMINAL 'out';
+
+		/* Soap Fault created*/		
+--		SET OutputRoot.SOAP.Context.Namespace.(SOAP.NamespaceDecl)xmlns:soapenv = SOAPENV;
+--		SET OutputRoot.SOAP.Body.ns:Fault.faultcode = SOAP_FAULTCODE_VALUE_CLIENT;
+--        SET OutputRoot.SOAP.Body.ns:Fault.faultstring = excepName;
+--        SET OutputRoot.SOAP.Body.ns:Fault.faultactor = InputRoot.HTTPInputHeader."X-Original-HTTP-Command";
+--        SET OutputRoot.SOAP.Body.ns:Fault.detail.ExceptionType = logMessage;
+--        SET OutputRoot.SOAP.Body.ns:Fault.detail.ExceptionNumber = errorNumber;
+--        SET OutputLocalEnvironment.Destination.SOAP.Reply.Transport.HTTP.ReplyStatusCode = 500;
+		SET OutputRoot.SOAP.Body.ns:sayHelloResponse.BMIMeasurement = 'Sorry an error occured';
+		PROPAGATE TO TERMINAL 'out1';
+		
+		RETURN FALSE;
+	END;
+
+	 /****************************************************************************
+	  * A procedure that will get the details of the last exception from a message
+	  * IN InputTree:  The incoming exception list
+	  * IN messageNumber:  The last message numberr.
+	  * IN messageText: The last message text.
+	  *****************************************************************************/
+	CREATE PROCEDURE getLastExceptionDetail(IN InputTree REFERENCE,
+											OUT messageNumber INTEGER,
+											OUT messageText CHAR,
+											OUT ExcepName CHARACTER) BEGIN
+		SET messageText='';
+	 	-- Create a reference to the first child of the exception list
+	  	DECLARE ptrException REFERENCE TO InputTree.*[1];
+	  	-- keep looping while the moves to the child of exception list work 
+	    WHILE lastmove(ptrException) DO
+	    	-- store the current values for the error number and text
+	      	IF ptrException.Number IS NOT NULL THEN
+	      		SET messageNumber = ptrException.Number;
+	      		SET messageText = ptrException.Text;
+	      		SET ExcepName= FIELDNAME(ptrException);
+	      		IF EXISTS(ptrException.Insert.*[]) THEN
+	      			SET messageText = COALESCE(messageText, '') || ' - ' || ptrException.Insert.[2];
+	      		END IF;
+	      	END IF;
+	      	-- now move to the last child which should be the next exceptionlist
+	      	move ptrException lastchild;
+		END WHILE; 
+	END;
+
+--	
+--	CREATE PROCEDURE Initialize_Log4j() BEGIN
+--   		DECLARE rc, devops_Log4j_Initialized BOOLEAN;
+--  	 	IF (devops_Log4j_Initialized.valid = NULL) THEN
+--   			CALL initLog4j('brokerlog.xml') INTO rc;
+--	   		IF ( rc = FALSE ) THEN
+--	   			THROW USER EXCEPTION MESSAGE 5560 VALUES ('Error Initializing log4j');
+--	   		END IF;
+--   			SET devops_Log4j_Initialized = TRUE;
+--   			CALL log4j_1_1(SQL.MessageFlowLabel, 'default', 'WARN', 'initLog4j() completed initialization of log4J env.' ) INTO rc;
+--   		END IF;
+--   	END;
+END MODULE;
+
+--CREATE FUNCTION initLog4j( IN CONFIG_FILE_NAME CHARACTER )
+--	RETURNS BOOLEAN
+--   	LANGUAGE JAVA
+--   	EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.initLog4j";
+--
+--CREATE FUNCTION log4j_1_1( IN COMPONENT_NAME CHARACTER,
+--   							IN LOGGER_NAME CHARACTER,
+--   							IN LEVEL CHARACTER,
+--   							IN TEXT CHARACTER )
+--	RETURNS BOOLEAN
+--   	LANGUAGE JAVA
+--   	EXTERNAL NAME "com.ibm.broker.IAM3.Log4jNode.log";
