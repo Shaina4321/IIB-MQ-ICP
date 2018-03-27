@@ -69,7 +69,7 @@ COPY mq-dev-config.sh mq-license-check.sh mq.sh setup-mqm-web.sh setup-var-mqm.s
 COPY *.mqsc /etc/mqm/
 COPY *.bar  /etc/mqm/
 RUN mkdir /etc/mqm/iibcode
-COPY DevOps_Demo_App /etc/mqm/iibcode/
+ADD DevOps_Demo_App /etc/mqm/iibcode/
 COPY admin.json /etc/mqm/
 COPY mq-dev-config /etc/mqm/mq-dev-config
 
