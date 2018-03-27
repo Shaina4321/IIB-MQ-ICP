@@ -145,12 +145,16 @@ start()
   	mqsistart $NODE_NAME
   	
 	# create bar file
-	mqsicreatebar -data /etc/mqm/ -b /etc/mqm/DevOps_Demo_App.bar -o /etc/mqm/DevOps_Demo_MF.msgflow
+	mqsicreatebar -data /etc/mqm/iibcode/ -b /etc/mqm/iibcode/DevOps_Demo_App.bar -a /etc/mqm/iibcode/DevOps_Demo_App
 	
 	
   	# mqsideploy $NODE_NAME -e $EXEC_NAME -a /etc/mqm/ICPDeploy.bar -m
 	# change to deploy all bar files
   	for BAR_FILE in $(ls -v /etc/mqm/*.bar); do
+	   echo "About to deploying bar file $BAR_FILE"
+	   mqsideploy ${NODE_NAME} -e ${EXEC_NAME} -a ${BAR_FILE}
+        done
+	for BAR_FILE in $(ls -v /etc/mqm/iibcode/*.bar); do
 	   echo "About to deploying bar file $BAR_FILE"
 	   mqsideploy ${NODE_NAME} -e ${EXEC_NAME} -a ${BAR_FILE}
         done
