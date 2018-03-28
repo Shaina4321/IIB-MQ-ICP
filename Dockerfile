@@ -75,16 +75,6 @@ COPY mq-dev-config /etc/mqm/mq-dev-config
 
 RUN chmod +x /usr/local/bin/*.sh
 
-# Install curl and xvfb for the toolkit libraries to work
-RUN apt-get update && \
- #apt-get install xorg && \
-  #apt-get install xvfb && \
- #apt-get install xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic && \
-    #export DISPLAY=:1 &&\
-    #DISPLAY=:1 &&\
-    apt-get install -y curl && \
-    rm -rf /var/lib/apt/lists/*
-
 
 # Install IIB V10 Developer edition
 RUN mkdir /opt/ibm && \
